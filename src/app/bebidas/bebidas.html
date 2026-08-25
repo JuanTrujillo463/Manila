@@ -1,0 +1,46 @@
+<div class="encabezado">
+
+  <h1 class="titulo-pagina">Bebidas</h1>
+
+  <div class="barra-busqueda">
+
+    <select class="filtro" [(ngModel)]="tipoBusqueda">
+      <option value="nombreCoctel">Cóctel por nombre</option>
+      <option value="nombreIngrediente">Ingrediente por nombre</option>
+    </select>
+
+    <input type="text" class="campo-texto" placeholder="Escribe aquí..." [(ngModel)]="textoBusqueda" (keyup.enter)="buscar()">
+
+    <select class="filtro" [(ngModel)]="filtroTipo">
+      <option value="">Tipo de bebida</option>
+      <option value="Alcoholic">Alcohólica</option>
+      <option value="Non_Alcoholic">Sin alcohol</option>
+    </select>
+
+    <select class="filtro" [(ngModel)]="filtroCategoria">
+      <option value="">Categoría</option>
+      <option value="Ordinary_Drink">Bebida ordinaria</option>
+      <option value="Cocktail">Cóctel</option>
+    </select>
+
+    <button class="boton-buscar" (click)="buscar()">Buscar</button>
+
+  </div>
+
+</div>
+
+<div class="categorias">
+  <button class="chip" (click)="cargarTodas()">Todas</button>
+</div>
+
+<p class="mensaje" *ngIf="cargando()">Cargando...</p>
+<p class="mensaje" *ngIf="error()">{{ error() }}</p>
+
+<div class="resultados">
+  <div class="tarjeta-bebida" *ngFor="let bebida of bebidas()">
+    <img [src]="bebida.strDrinkThumb" [alt]="bebida.strDrink">
+    <h3>{{ bebida.strDrink }}</h3>
+    <p class="precio">$ {{ precios()[bebida.idDrink] | number }}</p>
+    <button class="boton-agregar" (click)="agregarAlPedido(bebida)">Agregar al pedido</button>
+  </div>
+</div>

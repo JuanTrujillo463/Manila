@@ -1,0 +1,87 @@
+.footer {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+  background-color: #1a1a1a;
+  color: #f5f5f5;
+  padding: 40px 60px 20px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.footer-principal {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 40px;
+}
+
+
+.presentacion-restaurante {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  flex: 2;
+  min-width: 280px;
+}
+
+.presentacion-restaurante .logo {
+  font-size: 1.2rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  margin: 0;
+}
+
+.presentacion-restaurante .descripcion {
+  font-size: 0.95rem;
+  color: #cfcfcf;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.ubicacion {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+}
+
+.datos-contacto {
+  flex: 1;
+  min-width: 200px;
+  text-align: center;
+}
+
+.ubicacion .titulo,
+.datos-contacto .titulo {
+  font-size: 1.1rem;
+  font-weight: 500;
+  margin-bottom: 10px;
+}
+
+.ubicacion p,
+.datos-contacto p {
+  font-size: 0.9rem;
+  color: #cfcfcf;
+  margin: 4px 0;
+}
+
+.derechos-autor {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 15px;
+  text-align: center;
+  font-size: 0.85rem;
+  color: #cfcfcf;
+}
+
+@media (max-width: 768px) {
+  .footer-principal {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .presentacion-restaurante {
+    align-items: center;
+    text-align: center;
+  }
+}

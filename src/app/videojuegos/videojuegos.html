@@ -1,0 +1,27 @@
+<div class="encabezado">
+  <h1 class="titulo-pagina">Encuentra las parejas</h1>
+  <p class="subtitulo">Encuentra las imágenes de comidas y bebidas iguales</p>
+</div>
+
+<p class="mensaje" *ngIf="cargando()">Cargando el tablero...</p>
+
+<div class="info-juego" *ngIf="!cargando()">
+  <p>Intentos: {{ intentos() }}</p>
+  <p class="ganaste" *ngIf="juegoTerminado()">¡Felicidades, completaste el juego!</p>
+  <button class="boton-reiniciar" (click)="iniciarJuego()">Reiniciar</button>
+</div>
+
+<div class="tablero" *ngIf="!cargando()">
+  <div
+    class="carta"
+    *ngFor="let carta of cartas()"
+    [class.volteada]="carta.volteada || carta.encontrada"
+    [class.encontrada]="carta.encontrada"
+    (click)="voltearCarta(carta)"
+  >
+    <div class="cara cara-trasera">?</div>
+    <div class="cara cara-frontal">
+      <img [src]="carta.imagen">
+    </div>
+  </div>
+</div>

@@ -1,0 +1,119 @@
+import { Component, inject, OnInit, signal } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
+import { ServicioApiBebida } from '../servicios/servicio-api-bebida';
+import { EnviarDatos } from '../servicios/enviar-datos';
+import { Bebida } from '../entidades/bebida';
+
+@Component({
+  selector: 'app-bebidas',
+  imports: [CommonModule, FormsModule],
+  templateUrl: './bebidas.html',
+  styleUrl: './bebidas.css',
+})
+export class Bebidas implements OnInit {
+  private api = inject(ServicioApiBebida);
+  private carrito = inject(EnviarDatos);
+
+  tipoBusqueda = 'nombreCoctel';
+  textoBusqueda = '';
+  filtroTipo = '';
+  filtroCategoria = '';
+
+  bebidas = signal<Bebida[]>([]);
+  precios = signal<{ [id: string]: number }>({});
+  cargando = signal(false);
+  error = signal('');
+
+  ngOnInit() {
+    this.cargarTodas();
+  }
+
+  cargarTodas() {
+    this.cargando.set(true);
+    this.error.set('');
+    this.bebidas.set([]);
+    this.filtroTipo = '';
+    this.filtroCategoria = '';
+
+    this.api.bebidaPorTipo('Alcoholic').subscribe({
+      next: (respuesta) => this.agregarResultados(respuesta.drinks ?? []),
+      error: () => this.mostrarError(),
+    });
+
+    this.api.bebidaPorTipo('Non_Alcoholic').subscribe({
+      next: (respuesta) => this.agregarResultados(respuesta.drinks ?? []),
+      error: () => this.mostrarError(),
+    });
+  }
+
+  buscar() {
+    this.cargando.set(true);
+    this.error.set('');
+
+    let peticion;
+    if (this.filtroTipo) {
+      peticion = this.api.bebidaPorTipo(this.filtroTipo);
+    } else if (this.filtroCategoria) {
+      peticion = this.api.bebidaPorCategoria(this.filtroCategoria);
+    } else if (this.tipoBusqueda === 'nombreCoctel') {
+      peticion = this.api.recibirDatosBebida(this.textoBusqueda);
+    } else {
+      peticion = this.api.bebidaPorIngrediente(this.textoBusqueda);
+    }
+
+    peticion.subscribe({
+      next: (respuesta) => {
+        const lista = respuesta.drinks ?? [];
+        this.bebidas.set(lista);
+        this.asignarPrecios();
+        this.cargando.set(false);
+        if (lista.length === 0) {
+          this.error.set('No se encontraron resultados.');
+        }
+      },
+      error: () => {
+        this.cargando.set(false);
+        this.error.set('Ocurrió un error al buscar.');
+      },
+    });
+  }
+
+  agregarAlPedido(bebida: Bebida) {
+    this.carrito.agregarItem({
+      id: bebida.idDrink,
+      tipo: 'bebida',
+      nombre: bebida.strDrink,
+      imagen: bebida.strDrinkThumb,
+      precio: this.precios()[bebida.idDrink],
+      cantidad: 1,
+    });
+  }
+
+  private agregarResultados(nuevas: Bebida[]) {
+    this.bebidas.set([...this.bebidas(), ...nuevas]);
+    this.asignarPrecios();
+    this.cargando.set(false);
+  }
+
+  private mostrarError() {
+    this.cargando.set(false);
+    this.error.set('No se pudo conectar con la API de bebidas.');
+  }
+
+  private asignarPrecios() {
+    const preciosActuales = { ...this.precios() };
+
+    for (const bebida of this.bebidas()) {
+      const id = bebida.idDrink;
+      if (!preciosActuales[id]) {
+        preciosActuales[id] = this.api.asignarPrecioAleatorio();
+      }
+      if (!bebida.strDrinkThumb && id) {
+        bebida.strDrinkThumb = `https://www.thecocktaildb.com/images/media/drink/${id}.jpg`;
+      }
+    }
+
+    this.precios.set(preciosActuales);
+  }
+}

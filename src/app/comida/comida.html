@@ -1,0 +1,39 @@
+<div class="encabezado">
+
+  <h1 class="titulo-pagina">Comidas</h1>
+
+  <div class="barra-busqueda">
+
+    <select class="filtro" [(ngModel)]="tipoBusqueda">
+      <option value="nombre">Buscar por nombre</option>
+      <option value="ingrediente">Buscar por ingrediente</option>
+    </select>
+
+    <input type="text" class="campo-texto" placeholder="Escribe aquí..." [(ngModel)]="textoBusqueda" (keyup.enter)="buscar()">
+
+    <button class="boton-buscar" (click)="buscar()">Buscar</button>
+
+  </div>
+
+</div>
+
+<div class="categorias">
+  <button class="chip" (click)="cargarTodas()">Todos</button>
+  <button class="chip" (click)="cargarPorCategoria('Seafood')">Mariscos</button>
+  <button class="chip" (click)="cargarPorCategoria('Chicken')">Pollo</button>
+  <button class="chip" (click)="cargarPorCategoria('Dessert')">Postres</button>
+  <button class="chip" (click)="cargarPorCategoria('Vegetarian')">Vegetariano</button>
+  <button class="chip" (click)="cargarPorCategoria('Pasta')">Pasta</button>
+</div>
+
+<p class="mensaje" *ngIf="cargando()">Cargando...</p>
+<p class="mensaje" *ngIf="error()">{{ error() }}</p>
+
+<div class="resultados">
+  <div class="tarjeta-comida" *ngFor="let comida of comidas()">
+    <img [src]="comida.strMealThumb" [alt]="comida.strMeal">
+    <h3>{{ comida.strMeal }}</h3>
+    <p class="precio">$ {{ precios()[comida.idMeal] | number }}</p>
+    <button class="boton-agregar" (click)="agregarAlPedido(comida)">Agregar al pedido</button>
+  </div>
+</div>

@@ -1,0 +1,51 @@
+<div class="encabezado">
+  <h1 class="titulo-pagina">Mi pedido</h1>
+</div>
+
+<div class="contenido" *ngIf="!mostrarFormulario">
+
+  <p class="mensaje" *ngIf="carrito.pedido().length === 0">Aún no has agregado productos.</p>
+
+  <div class="lista-pedido" *ngIf="carrito.pedido().length > 0">
+    <div class="fila" *ngFor="let item of carrito.pedido()">
+      <img [src]="item.imagen" [alt]="item.nombre">
+      <div class="datos-item">
+        <p class="nombre">{{ item.nombre }}</p>
+        <p class="tipo">{{ item.tipo === 'comida' ? 'Comida' : 'Bebida' }}</p>
+      </div>
+      <input type="number" min="1" class="cantidad" [ngModel]="item.cantidad" (ngModelChange)="cambiarCantidad(item.id, item.tipo, $event)">
+      <p class="precio">$ {{ (item.precio * item.cantidad) | number }}</p>
+      <button class="boton-quitar" (click)="quitar(item.id, item.tipo)">Quitar</button>
+    </div>
+
+    <div class="total">
+      <p>Total: <span>$ {{ carrito.calcularTotal() | number }}</span></p>
+      <button class="boton-continuar" (click)="irAlFormulario()">Realizar pedido</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="contenido" *ngIf="mostrarFormulario">
+
+  <div class="formulario">
+    <h2>Datos para el pedido</h2>
+
+    <label>Nombre completo</label>
+    <input type="text" [(ngModel)]="datos.nombreCompleto" placeholder="Escribe tu nombre">
+
+    <label>Celular</label>
+    <input type="text" [(ngModel)]="datos.celular" placeholder="Ej: 3001234567">
+
+    <label>Dirección</label>
+    <input type="text" [(ngModel)]="datos.direccion" placeholder="Escribe tu dirección">
+
+    <p class="error" *ngIf="errorFormulario">{{ errorFormulario }}</p>
+
+    <div class="acciones-formulario">
+      <button class="boton-volver" (click)="mostrarFormulario = false">Volver</button>
+      <button class="boton-confirmar" (click)="realizarPedido()">Confirmar y descargar PDF</button>
+    </div>
+  </div>
+
+</div>

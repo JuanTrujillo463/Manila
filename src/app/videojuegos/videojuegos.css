@@ -1,0 +1,117 @@
+.encabezado {
+  background-color: #1a1a1a;
+  padding: 36px 60px;
+  margin: 14px 0 18px;
+}
+
+.titulo-pagina {
+  color: #f5f5f5;
+  font-size: 32px;
+  font-weight: bold;
+  margin: 0;
+}
+
+.subtitulo {
+  color: #a0a0a0;
+  font-size: 14px;
+  margin: 8px 0 0;
+}
+
+.mensaje {
+  padding: 0 60px;
+  color: #a0a0a0;
+}
+
+.info-juego {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 0 60px 20px;
+  color: #f5f5f5;
+}
+
+.ganaste {
+  color: #d2691e;
+  font-weight: bold;
+}
+
+.boton-reiniciar {
+  background-color: #d2691e;
+  color: #f5f5f5;
+  border: none;
+  border-radius: 8px;
+  padding: 8px 20px;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.boton-reiniciar:hover {
+  background-color: #b85a19;
+}
+
+.tablero {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 520px;
+  margin: 0 auto 40px;
+  padding: 0 20px;
+}
+
+.carta {
+  position: relative;
+  aspect-ratio: 1 / 1;
+  cursor: pointer;
+  perspective: 600px;
+}
+
+.cara {
+  position: absolute;
+  inset: 0;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  transition: transform 0.4s;
+}
+
+.cara-trasera {
+  background-color: #262626;
+  border: 1px solid #3a3a3a;
+  color: #d2691e;
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.cara-frontal {
+  background-color: #1a1a1a;
+  border: 1px solid #3a3a3a;
+  transform: rotateY(180deg);
+  overflow: hidden;
+}
+
+.cara-frontal img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.carta.volteada .cara-trasera {
+  transform: rotateY(180deg);
+}
+
+.carta.volteada .cara-frontal {
+  transform: rotateY(0deg);
+}
+
+.carta.encontrada .cara-frontal {
+  outline: 2px solid #d2691e;
+}
+
+@media (max-width: 500px) {
+  .tablero {
+    max-width: 340px;
+  }
+}

@@ -1,0 +1,27 @@
+<div class="contenedor">
+
+  <div class="lado-izquierdo">
+    <h1 class="titulo">Sabores de Manila, servidos con calor de barrio.</h1>
+  </div>
+
+  <div class="lado-derecho">
+
+    <div class="tarjeta" *ngIf="platoEstrella() as plato">
+      <img [src]="plato.strMealThumb" [alt]="plato.strMeal">
+      <div>
+        <p class="tarjeta-titulo">PLATO ESTRELLA</p>
+        <p class="nombre-item">{{ plato.strMeal }}</p>
+      </div>
+    </div>
+
+    <div class="tarjeta" *ngIf="bebidaEstrella() as bebida">
+      <img [src]="bebida.strDrinkThumb" [alt]="bebida.strDrink">
+      <div>
+        <p class="tarjeta-titulo">BEBIDA ESTRELLA</p>
+        <p class="nombre-item">{{ bebida.strDrink }}</p>
+      </div>
+    </div>
+
+  </div>
+
+</div>
