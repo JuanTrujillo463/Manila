@@ -22,7 +22,6 @@ export class Comida implements OnInit {
 
   comidas = signal<ComidaEntidad[]>([]);
   precios = signal<{ [id: string]: number }>({});
-  cargando = signal(false);
   error = signal('');
 
   ngOnInit() {
@@ -30,24 +29,17 @@ export class Comida implements OnInit {
   }
 
   cargarPorCategoria(categoria: string) {
-    this.cargando.set(true);
     this.error.set('');
 
     this.api.comidaPorCategoria(categoria).subscribe({
       next: (respuesta) => {
         this.comidas.set(respuesta.meals ?? []);
         this.asignarPrecios();
-        this.cargando.set(false);
-      },
-      error: () => {
-        this.cargando.set(false);
-        this.error.set('No se pudo cargar la comida.');
       },
     });
   }
 
   cargarTodas() {
-    this.cargando.set(true);
     this.error.set('');
     this.comidas.set([]);
 
@@ -57,11 +49,6 @@ export class Comida implements OnInit {
           const nuevas: ComidaEntidad[] = respuesta.meals ?? [];
           this.comidas.set([...this.comidas(), ...nuevas]);
           this.asignarPrecios();
-          this.cargando.set(false);
-        },
-        error: () => {
-          this.cargando.set(false);
-          this.error.set('No se pudo cargar la comida.');
         },
       });
     }
@@ -72,7 +59,6 @@ export class Comida implements OnInit {
       return;
     }
 
-    this.cargando.set(true);
     this.error.set('');
 
     const peticion =
@@ -85,14 +71,9 @@ export class Comida implements OnInit {
         const lista = respuesta.meals ?? [];
         this.comidas.set(lista);
         this.asignarPrecios();
-        this.cargando.set(false);
         if (lista.length === 0) {
           this.error.set('No se encontraron resultados.');
         }
-      },
-      error: () => {
-        this.cargando.set(false);
-        this.error.set('Ocurrió un error al buscar.');
       },
     });
   }

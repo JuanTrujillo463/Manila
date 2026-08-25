@@ -22,7 +22,6 @@ export class Bebidas implements OnInit {
 
   bebidas = signal<Bebida[]>([]);
   precios = signal<{ [id: string]: number }>({});
-  cargando = signal(false);
   error = signal('');
 
   ngOnInit() {
@@ -30,7 +29,6 @@ export class Bebidas implements OnInit {
   }
 
   cargarTodas() {
-    this.cargando.set(true);
     this.error.set('');
     this.bebidas.set([]);
     this.filtroTipo = '';
@@ -38,17 +36,14 @@ export class Bebidas implements OnInit {
 
     this.api.bebidaPorTipo('Alcoholic').subscribe({
       next: (respuesta) => this.agregarResultados(respuesta.drinks ?? []),
-      error: () => this.mostrarError(),
     });
 
     this.api.bebidaPorTipo('Non_Alcoholic').subscribe({
       next: (respuesta) => this.agregarResultados(respuesta.drinks ?? []),
-      error: () => this.mostrarError(),
     });
   }
 
   buscar() {
-    this.cargando.set(true);
     this.error.set('');
 
     let peticion;
@@ -67,14 +62,9 @@ export class Bebidas implements OnInit {
         const lista = respuesta.drinks ?? [];
         this.bebidas.set(lista);
         this.asignarPrecios();
-        this.cargando.set(false);
         if (lista.length === 0) {
           this.error.set('No se encontraron resultados.');
         }
-      },
-      error: () => {
-        this.cargando.set(false);
-        this.error.set('Ocurrió un error al buscar.');
       },
     });
   }
@@ -93,12 +83,6 @@ export class Bebidas implements OnInit {
   private agregarResultados(nuevas: Bebida[]) {
     this.bebidas.set([...this.bebidas(), ...nuevas]);
     this.asignarPrecios();
-    this.cargando.set(false);
-  }
-
-  private mostrarError() {
-    this.cargando.set(false);
-    this.error.set('No se pudo conectar con la API de bebidas.');
   }
 
   private asignarPrecios() {
