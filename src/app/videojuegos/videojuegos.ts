@@ -37,7 +37,7 @@ export class Videojuegos implements OnInit {
     this.iniciarJuego();
   }
 
-  iniciarJuego() {
+    iniciarJuego() {
     this.cargando.set(true);
     this.juegoTerminado.set(false);
     this.intentos.set(0);
@@ -46,16 +46,33 @@ export class Videojuegos implements OnInit {
     this.peticionesPendientes = PAREJAS_POR_TIPO * 2;
 
     for (let i = 0; i < PAREJAS_POR_TIPO; i++) {
-      this.apiComida.comidaAleatoria().subscribe((respuesta) => {
-        this.imagenesCargadas.push(respuesta.meals[0].strMealThumb);
-        this.revisarSiYaCargaronTodas();
-      });
-
-      this.apiBebida.bebidaAleatoria().subscribe((respuesta) => {
-        this.imagenesCargadas.push(respuesta.drinks[0].strDrinkThumb);
-        this.revisarSiYaCargaronTodas();
-      });
+      this.pedirComidaUnica();
+      this.pedirBebidaUnica();
     }
+  }
+
+  private pedirComidaUnica() {
+    this.apiComida.comidaAleatoria().subscribe((respuesta) => {
+      const imagen = respuesta.meals[0].strMealThumb;
+      if (this.imagenesCargadas.includes(imagen)) {
+        this.pedirComidaUnica(); // repetida, pedimos otra
+        return;
+      }
+      this.imagenesCargadas.push(imagen);
+      this.revisarSiYaCargaronTodas();
+    });
+  }
+
+  private pedirBebidaUnica() {
+    this.apiBebida.bebidaAleatoria().subscribe((respuesta) => {
+      const imagen = respuesta.drinks[0].strDrinkThumb;
+      if (this.imagenesCargadas.includes(imagen)) {
+        this.pedirBebidaUnica(); // repetida, pedimos otra
+        return;
+      }
+      this.imagenesCargadas.push(imagen);
+      this.revisarSiYaCargaronTodas();
+    });
   }
 
   voltearCarta(carta: Carta) {
