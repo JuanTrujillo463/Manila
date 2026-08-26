@@ -10,8 +10,8 @@ interface Carta {
   encontrada: boolean;
 }
 
-const PAREJAS_POR_TIPO = 4;
-const MS_ESPERA_ERROR = 900;
+const pareja = 4;
+const espera = 900;
 
 @Component({
   selector: 'app-videojuegos',
@@ -43,9 +43,9 @@ export class Videojuegos implements OnInit {
     this.intentos.set(0);
 
     this.imagenesCargadas = [];
-    this.peticionesPendientes = PAREJAS_POR_TIPO * 2;
+    this.peticionesPendientes = pareja * 2;
 
-    for (let i = 0; i < PAREJAS_POR_TIPO; i++) {
+    for (let i = 0; i < pareja; i++) {
       this.pedirComidaUnica();
       this.pedirBebidaUnica();
     }
@@ -55,7 +55,7 @@ export class Videojuegos implements OnInit {
     this.apiComida.comidaAleatoria().subscribe((respuesta) => {
       const imagen = respuesta.meals[0].strMealThumb;
       if (this.imagenesCargadas.includes(imagen)) {
-        this.pedirComidaUnica(); // repetida, pedimos otra
+        this.pedirComidaUnica();
         return;
       }
       this.imagenesCargadas.push(imagen);
@@ -67,7 +67,7 @@ export class Videojuegos implements OnInit {
     this.apiBebida.bebidaAleatoria().subscribe((respuesta) => {
       const imagen = respuesta.drinks[0].strDrinkThumb;
       if (this.imagenesCargadas.includes(imagen)) {
-        this.pedirBebidaUnica(); // repetida, pedimos otra
+        this.pedirBebidaUnica();
         return;
       }
       this.imagenesCargadas.push(imagen);
@@ -103,7 +103,7 @@ export class Videojuegos implements OnInit {
         this.actualizarCarta(idSegunda, { volteada: false });
         this.primeraCarta = null;
         this.bloqueado = false;
-      }, MS_ESPERA_ERROR);
+      }, espera);
     }
   }
 

@@ -34,5 +34,21 @@
     <h3>{{ comida.strMeal }}</h3>
     <p class="precio">$ {{ precios()[comida.idMeal] | number }}</p>
     <button class="boton-agregar" (click)="agregarAlPedido(comida)">Agregar al pedido</button>
+    <button class="boton-detalle" (click)="verDetalle(comida)">Ver detalle</button>
+  </div>
+</div>
+
+<div class="fondo-modal" *ngIf="detalle()" (click)="cerrarDetalle()">
+  <div class="modal-detalle" (click)="$event.stopPropagation()">
+    <button class="boton-cerrar" (click)="cerrarDetalle()">✕</button>
+    <img [src]="detalle()!.strMealThumb" [alt]="detalle()!.strMeal">
+    <h2>{{ detalle()!.strMeal }}</h2>
+    <p class="precio">$ {{ precios()[detalle()!.idMeal] | number }}</p>
+    <p><strong>Categoría:</strong> {{ detalle()!.strCategory }}</p>
+    <p><strong>Ingredientes:</strong></p>
+    <ul class="lista-ingredientes">
+      <li *ngFor="let ingrediente of detalle()!.ingredientes">{{ ingrediente }}</li>
+    </ul>
+    <button class="boton-agregar" (click)="agregarAlPedido(detalle()!); cerrarDetalle()">Agregar al pedido</button>
   </div>
 </div>

@@ -23,6 +23,7 @@ export class Bebidas implements OnInit {
   bebidas = signal<Bebida[]>([]);
   precios = signal<{ [id: string]: number }>({});
   error = signal('');
+  detalle = signal<Bebida | null>(null);
 
   ngOnInit() {
     this.cargarTodas();
@@ -80,6 +81,20 @@ export class Bebidas implements OnInit {
     });
   }
 
+  verDetalle(bebida: Bebida) {
+    this.api.bebidaPorId(bebida.idDrink).subscribe({
+      next: (respuesta) => {
+        const detalleCompleto = respuesta.drinks?.[0] ?? bebida;
+        detalleCompleto.ingredientes = this.api.armarIngredientes(detalleCompleto);
+        this.detalle.set(detalleCompleto);
+      },
+    });
+  }
+
+  cerrarDetalle() {
+    this.detalle.set(null);
+  }
+
   private agregarResultados(nuevas: Bebida[]) {
     this.bebidas.set([...this.bebidas(), ...nuevas]);
     this.asignarPrecios();
@@ -92,9 +107,6 @@ export class Bebidas implements OnInit {
       const id = bebida.idDrink;
       if (!preciosActuales[id]) {
         preciosActuales[id] = this.api.asignarPrecioAleatorio();
-      }
-      if (!bebida.strDrinkThumb && id) {
-        bebida.strDrinkThumb = `https://www.thecocktaildb.com/images/media/drink/${id}.jpg`;
       }
     }
 

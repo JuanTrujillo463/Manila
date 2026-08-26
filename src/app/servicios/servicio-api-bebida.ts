@@ -38,4 +38,19 @@ export class ServicioApiBebida {
     const max = 45000;
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+  armarIngredientes(bebida: any): string[] {
+    const lista: string[] = [];
+
+    for (let i = 1; i <= 15; i++) {
+      const ingrediente = bebida[`strIngredient${i}`];
+      const medida = bebida[`strMeasure${i}`];
+
+      if (ingrediente && ingrediente.trim()) {
+        lista.push(medida && medida.trim() ? `${ingrediente} - ${medida}` : ingrediente);
+      }
+    }
+
+    return lista;
+  }
 }

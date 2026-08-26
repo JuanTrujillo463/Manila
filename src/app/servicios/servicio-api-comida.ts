@@ -34,4 +34,19 @@ export class ServicioApiComida {
     const max = 45000;
     return Math.floor(Math.random() * (max - min + 1)) + min;
   }
+
+  armarIngredientes(comida: any): string[] {
+    const lista: string[] = [];
+
+    for (let i = 1; i <= 20; i++) {
+      const ingrediente = comida[`strIngredient${i}`];
+      const medida = comida[`strMeasure${i}`];
+
+      if (ingrediente && ingrediente.trim()) {
+        lista.push(medida && medida.trim() ? `${ingrediente} - ${medida}` : ingrediente);
+      }
+    }
+
+    return lista;
+  }
 }

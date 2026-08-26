@@ -2,5 +2,9 @@ export interface Bebida {
   idDrink: string;
   strDrink: string;
   strDrinkThumb: string;
-  [key: string]: any;
+  strCategory?: string;
+  strAlcoholic?: string;
+  strGlass?: string;
+  strInstructions?: string;
+  ingredientes?: string[];
 }

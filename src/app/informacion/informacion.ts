@@ -5,8 +5,8 @@ import { ServicioApiComida } from '../servicios/servicio-api-comida';
 import { Comida } from '../entidades/comida';
 import { Bebida } from '../entidades/bebida';
 
-const ID_PLATO_ESTRELLA = '52772';
-const ID_BEBIDA_ESTRELLA = '11007';
+const id_Plato = '52772';
+const id_Bebida = '11007';
 
 @Component({
   selector: 'app-informacion',
@@ -22,11 +22,11 @@ export class Informacion implements OnInit {
   bebidaEstrella = signal<Bebida | null>(null);
 
   ngOnInit() {
-    this.apiComida.comidaPorId(ID_PLATO_ESTRELLA).subscribe((respuesta) => {
+    this.apiComida.comidaPorId(id_Plato).subscribe((respuesta) => {
       this.platoEstrella.set(respuesta.meals ? respuesta.meals[0] : null);
     });
 
-    this.apiBebida.bebidaPorId(ID_BEBIDA_ESTRELLA).subscribe((respuesta) => {
+    this.apiBebida.bebidaPorId(id_Bebida).subscribe((respuesta) => {
       this.bebidaEstrella.set(respuesta.drinks ? respuesta.drinks[0] : null);
     });
   }

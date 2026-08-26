@@ -5,7 +5,7 @@ import { ServicioApiComida } from '../servicios/servicio-api-comida';
 import { EnviarDatos } from '../servicios/enviar-datos';
 import { Comida as ComidaEntidad } from '../entidades/comida';
 
-const CATEGORIAS = ['Seafood', 'Chicken', 'Dessert', 'Vegetarian', 'Pasta'];
+const categorias = ['Seafood', 'Chicken', 'Dessert', 'Vegetarian', 'Pasta'];
 
 @Component({
   selector: 'app-comida',
@@ -23,6 +23,7 @@ export class Comida implements OnInit {
   comidas = signal<ComidaEntidad[]>([]);
   precios = signal<{ [id: string]: number }>({});
   error = signal('');
+  detalle = signal<ComidaEntidad | null>(null);
 
   ngOnInit() {
     this.cargarPorCategoria('Seafood');
@@ -43,7 +44,7 @@ export class Comida implements OnInit {
     this.error.set('');
     this.comidas.set([]);
 
-    for (const categoria of CATEGORIAS) {
+    for (const categoria of categorias) {
       this.api.comidaPorCategoria(categoria).subscribe({
         next: (respuesta) => {
           const nuevas: ComidaEntidad[] = respuesta.meals ?? [];
@@ -89,6 +90,20 @@ export class Comida implements OnInit {
     });
   }
 
+  verDetalle(comida: ComidaEntidad) {
+    this.api.comidaPorId(comida.idMeal).subscribe({
+      next: (respuesta) => {
+        const detalleCompleto = respuesta.meals?.[0] ?? comida;
+        detalleCompleto.ingredientes = this.api.armarIngredientes(detalleCompleto);
+        this.detalle.set(detalleCompleto);
+      },
+    });
+  }
+
+  cerrarDetalle() {
+    this.detalle.set(null);
+  }
+
   private asignarPrecios() {
     const preciosActuales = { ...this.precios() };
 
@@ -96,9 +111,6 @@ export class Comida implements OnInit {
       const id = comida.idMeal;
       if (!preciosActuales[id]) {
         preciosActuales[id] = this.api.asignarPrecioAleatorio();
-      }
-      if (!comida.strMealThumb && id) {
-        comida.strMealThumb = `https://www.themealdb.com/images/media/meals/${id}.jpg`;
       }
     }
 

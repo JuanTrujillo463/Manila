@@ -2,5 +2,7 @@ export interface Comida {
   idMeal: string;
   strMeal: string;
   strMealThumb: string;
-  [key: string]: any;
+  strCategory?: string;
+  instruciones?: string;
+  ingredientes?: string[];
 }

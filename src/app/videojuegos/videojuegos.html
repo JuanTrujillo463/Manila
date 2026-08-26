@@ -6,7 +6,7 @@
 <p class="mensaje" *ngIf="cargando()">Cargando el tablero...</p>
 
 <div class="info-juego" *ngIf="!cargando()">
-  <p>Intentos: {{ intentos() }}</p>
+  <p class="intento">Intentos: {{ intentos() }}</p>
   <p class="ganaste" *ngIf="juegoTerminado()">¡Felicidades, completaste el juego!</p>
   <button class="boton-reiniciar" (click)="iniciarJuego()">Reiniciar</button>
 </div>
