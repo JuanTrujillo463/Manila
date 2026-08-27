@@ -1,13 +1,10 @@
-/* You can add global styles to this file, and also import other style files */
-
 html {
   scroll-behavior: smooth;
 }
 
-.imagen{
-  height: 60px;
-  width: auto;
-  object-fit: contain;
-  border-radius: 50%;
-  clip-path: circle(31%);
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #0d0d0d;
+  min-height: 100%;
 }

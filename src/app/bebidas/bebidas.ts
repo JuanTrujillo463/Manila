@@ -63,11 +63,7 @@ export class Bebidas implements OnInit {
     let necesitaDetalle = false;
     const filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'> = [];
 
-    // Se elige la petición base con el criterio más restrictivo disponible;
-    // los demás filtros activos se aplican después sobre esos resultados.
     if (usaIngredienteComoBase) {
-      // La API necesita los ingredientes de varias palabras con "_" en vez de espacio
-      // (ej: "Orange Juice" -> "Orange_Juice"), si no, no encuentra coincidencias.
       const ingredienteFormateado = texto.replace(/ /g, '_');
       peticion = this.api.bebidaPorIngrediente(ingredienteFormateado);
       necesitaDetalle = true;
@@ -83,8 +79,6 @@ export class Bebidas implements OnInit {
       necesitaDetalle = true;
       if (texto) filtrosPendientes.push('nombre');
     } else {
-      // Búsqueda por nombre: search.php ya trae todos los datos, no hace
-      // falta pedir el detalle de cada bebida por aparte.
       peticion = this.api.recibirDatosBebida(texto);
       filtrosPendientes.push('nombre');
     }
@@ -99,8 +93,6 @@ export class Bebidas implements OnInit {
           return;
         }
 
-        // filter.php solo devuelve id/nombre/imagen. Si hace falta aplicar
-        // más filtros (nombre, tipo o categoría), se piden los datos completos.
         if (necesitaDetalle && filtrosPendientes.length > 0) {
           this.completarYFiltrar(base, texto, filtrosPendientes);
         } else if (filtrosPendientes.length > 0) {
@@ -142,8 +134,6 @@ export class Bebidas implements OnInit {
           contarRespuesta();
         },
         error: () => {
-          // Si una petición falla, la contamos igual para no dejar
-          // el buscador esperando para siempre.
           contarRespuesta();
         },
       });
@@ -157,9 +147,6 @@ export class Bebidas implements OnInit {
     let resultado = lista;
 
     if (filtrosPendientes.includes('nombre')) {
-  // Se separa el texto escrito en palabras sueltas: si el nombre de la
-  // bebida contiene AL MENOS UNA de esas palabras, se considera coincidencia.
-  // Así no hace falta escribir el nombre completo o en orden exacto.
   const palabras = texto
     .toLowerCase()
     .split(' ')
