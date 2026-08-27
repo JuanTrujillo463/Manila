@@ -12,6 +12,7 @@ import { Bebida } from '../entidades/bebida';
   styleUrl: './bebidas.css',
 })
 export class Bebidas implements OnInit {
+
   private api = inject(ServicioApiBebida);
   private carrito = inject(EnviarDatos);
 
@@ -39,11 +40,23 @@ export class Bebidas implements OnInit {
     this.filtroCategoria = '';
 
     this.api.bebidaPorTipo('Alcoholic').subscribe({
-      next: (respuesta) => this.agregarResultados(respuesta.drinks ?? []),
+      next: (respuesta) => {
+        let nuevas: Bebida[] = [];
+        if (respuesta.drinks) {
+          nuevas = respuesta.drinks;
+        }
+        this.agregarResultados(nuevas);
+      },
     });
 
     this.api.bebidaPorTipo('Non_Alcoholic').subscribe({
-      next: (respuesta) => this.agregarResultados(respuesta.drinks ?? []),
+      next: (respuesta) => {
+        let nuevas: Bebida[] = [];
+        if (respuesta.drinks) {
+          nuevas = respuesta.drinks;
+        }
+        this.agregarResultados(nuevas);
+      },
     });
   }
 
@@ -51,7 +64,11 @@ export class Bebidas implements OnInit {
     this.error.set('');
 
     const texto = this.textoBusqueda.trim();
-    const usaIngredienteComoBase = !!texto && this.tipoBusqueda === 'nombreIngrediente';
+
+    let usaIngredienteComoBase = false;
+    if (texto.length > 0 && this.tipoBusqueda === 'nombreIngrediente') {
+      usaIngredienteComoBase = true;
+    }
 
     if (!usaIngredienteComoBase && !this.filtroTipo && !this.filtroCategoria && !texto) {
       this.error.set('Escribe un texto o selecciona un filtro para buscar.');
@@ -83,9 +100,11 @@ export class Bebidas implements OnInit {
       filtrosPendientes.push('nombre');
     }
 
-    peticion.subscribe({
-      next: (respuesta) => {
-        const base = respuesta.drinks ?? [];
+    peticion.subscribe({next: (respuesta) => {
+        let base: Bebida[] = [];
+        if (respuesta.drinks) {
+          base = respuesta.drinks;
+        }
 
         if (base.length === 0) {
           this.bebidas.set([]);
@@ -109,11 +128,7 @@ export class Bebidas implements OnInit {
     });
   }
 
-  private completarYFiltrar(
-    base: Bebida[],
-    texto: string,
-    filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'>
-  ) {
+  private completarYFiltrar(base: Bebida[], texto: string, filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'>) {
     const completos: Bebida[] = [];
     let recibidas = 0;
 
@@ -127,7 +142,10 @@ export class Bebidas implements OnInit {
     for (const bebida of base) {
       this.api.bebidaPorId(bebida.idDrink).subscribe({
         next: (respuesta) => {
-          const detalle = respuesta.drinks?.[0];
+          let detalle: Bebida | null = null;
+          if (respuesta.drinks && respuesta.drinks[0]) {
+            detalle = respuesta.drinks[0];
+          }
           if (detalle) {
             completos.push(detalle);
           }
@@ -139,33 +157,71 @@ export class Bebidas implements OnInit {
       });
     }
   }
-  private aplicarFiltrosYMostrar(
-    lista: Bebida[],
-    texto: string,
-    filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'>
-  ) {
+
+  private aplicarFiltrosYMostrar(lista: Bebida[], texto: string, filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'>) {
     let resultado = lista;
 
     if (filtrosPendientes.includes('nombre')) {
-  const palabras = texto
-    .toLowerCase()
-    .split(' ')
-    .filter((palabra) => palabra.length > 0);
 
-  resultado = resultado.filter((b) => {
-    const nombre = b.strDrink.toLowerCase();
-    return palabras.some((palabra) => nombre.includes(palabra));
-      });
+      const palabrasEscritas = texto.toLowerCase().split(' ');
+      const palabras: string[] = [];
+      for (const palabra of palabrasEscritas) {
+        if (palabra.length > 0) {
+          palabras.push(palabra);
+        }
+      }
+
+      const resultadoFiltradoPorNombre: Bebida[] = [];
+      for (const bebida of resultado) {
+        const nombre = bebida.strDrink.toLowerCase();
+
+        let coincide = false;
+        for (const palabra of palabras) {
+          if (nombre.includes(palabra)) {
+            coincide = true;
+          }
+        }
+
+        if (coincide) {
+          resultadoFiltradoPorNombre.push(bebida);
+        }
+      }
+
+      resultado = resultadoFiltradoPorNombre;
     }
 
     if (filtrosPendientes.includes('tipo')) {
-      resultado = resultado.filter((b) => (b.strAlcoholic ?? '').replace(/ /g, '_') === this.filtroTipo);
+      const resultadoFiltradoPorTipo: Bebida[] = [];
+
+      for (const bebida of resultado) {
+        let tipoBebida = '';
+        if (bebida.strAlcoholic) {
+          tipoBebida = bebida.strAlcoholic;
+        }
+
+        if (tipoBebida.replace(/ /g, '_') === this.filtroTipo) {
+          resultadoFiltradoPorTipo.push(bebida);
+        }
+      }
+
+      resultado = resultadoFiltradoPorTipo;
     }
 
     if (filtrosPendientes.includes('categoria')) {
-      resultado = resultado.filter(
-        (b) => (b.strCategory ?? '').replace(/ /g, '_') === this.filtroCategoria
-      );
+      const resultadoFiltradoPorCategoria: Bebida[] = [];
+
+      for (const bebida of resultado) {
+        let categoriaBebida = '';
+        if (bebida.strCategory) {
+          categoriaBebida = bebida.strCategory;
+        }
+
+        if (categoriaBebida.replace(/ /g, '_') === this.filtroCategoria) {
+          resultadoFiltradoPorCategoria.push(bebida);
+        }
+      }
+
+      resultado = resultadoFiltradoPorCategoria;
     }
 
     this.bebidas.set(resultado);
@@ -188,13 +244,18 @@ export class Bebidas implements OnInit {
 
     this.mostrarConfirmacion.set(true);
     clearTimeout(this.temporizadorConfirmacion);
-    this.temporizadorConfirmacion = setTimeout(() => this.mostrarConfirmacion.set(false), 2000);
+    this.temporizadorConfirmacion = setTimeout(() => {this.mostrarConfirmacion.set(false); }, 2000);
   }
 
   verDetalle(bebida: Bebida) {
     this.api.bebidaPorId(bebida.idDrink).subscribe({
       next: (respuesta) => {
-        const detalleCompleto = respuesta.drinks?.[0] ?? bebida;
+
+        let detalleCompleto = bebida;
+        if (respuesta.drinks && respuesta.drinks[0]) {
+          detalleCompleto = respuesta.drinks[0];
+        }
+
         detalleCompleto.ingredientes = this.api.armarIngredientes(detalleCompleto);
         this.detalle.set(detalleCompleto);
       },
@@ -210,12 +271,14 @@ export class Bebidas implements OnInit {
   }
 
   private agregarResultados(nuevas: Bebida[]) {
-    this.bebidas.set([...this.bebidas(), ...nuevas]);
+    const listaActual = this.bebidas();
+    const listaCompleta = listaActual.concat(nuevas);
+    this.bebidas.set(listaCompleta);
     this.asignarPrecios();
   }
 
   private asignarPrecios() {
-    const preciosActuales = { ...this.precios() };
+    const preciosActuales = Object.assign({}, this.precios());
 
     for (const bebida of this.bebidas()) {
       const id = bebida.idDrink;

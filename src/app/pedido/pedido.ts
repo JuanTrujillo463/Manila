@@ -26,9 +26,10 @@ const DATOS_CLIENTE_VACIOS: DatosCliente = {
   styleUrl: './pedido.css',
 })
 export class Pedido {
+
   carrito = inject(EnviarDatos);
 
-  datos: DatosCliente = { ...DATOS_CLIENTE_VACIOS };
+  datos: DatosCliente = Object.assign({}, DATOS_CLIENTE_VACIOS);
   mostrarFormulario = false;
   errorFormulario = '';
 
@@ -38,6 +39,13 @@ export class Pedido {
 
   cambiarCantidad(id: string, tipo: string, cantidad: number) {
     this.carrito.cambiarCantidad(id, tipo, cantidad);
+  }
+
+  obtenerTipoTexto(tipo: string): string {
+    if (tipo === 'comida') {
+      return 'Comida';
+    }
+    return 'Bebida';
   }
 
   irAlFormulario() {
@@ -62,6 +70,7 @@ export class Pedido {
     return new Promise((resolve) => {
       const img = new Image();
       img.crossOrigin = 'anonymous';
+
       img.onload = () => {
         const lado = Math.min(img.width, img.height);
         const origenX = (img.width - lado) / 2;
@@ -87,7 +96,11 @@ export class Pedido {
 
         resolve(canvas.toDataURL('image/png'));
       };
-      img.onerror = () => resolve(null);
+
+      img.onerror = () => {
+        resolve(null);
+      };
+
       img.src = url;
     });
   }
@@ -95,32 +108,32 @@ export class Pedido {
   private dibujarEncabezado(doc: jsPDF, anchoPagina: number, margenX: number, logoBase64: string | null, fecha: string) {
     const altoEncabezado = 36;
 
-    doc.setFillColor(...COLOR_OSCURO);
+    doc.setFillColor(COLOR_OSCURO[0], COLOR_OSCURO[1], COLOR_OSCURO[2]);
     doc.rect(0, 0, anchoPagina, altoEncabezado, 'F');
-    doc.setFillColor(...COLOR_NARANJA);
+    doc.setFillColor(COLOR_NARANJA[0], COLOR_NARANJA[1], COLOR_NARANJA[2]);
     doc.rect(0, altoEncabezado, anchoPagina, 1.2, 'F');
 
     if (logoBase64) {
       doc.addImage(logoBase64, 'PNG', margenX, 8, 20, 20);
     } else {
-      doc.setDrawColor(...COLOR_NARANJA);
+      doc.setDrawColor(COLOR_NARANJA[0], COLOR_NARANJA[1], COLOR_NARANJA[2]);
       doc.setLineWidth(0.4);
       doc.roundedRect(margenX, 8, 20, 20, 2, 2);
       doc.setFontSize(7);
-      doc.setTextColor(...COLOR_GRIS);
+      doc.setTextColor(COLOR_GRIS[0], COLOR_GRIS[1], COLOR_GRIS[2]);
       doc.text('LOGO', margenX + 10, 19, { align: 'center' });
     }
 
-    doc.setTextColor(...COLOR_CLARO);
+    doc.setTextColor(COLOR_CLARO[0], COLOR_CLARO[1], COLOR_CLARO[2]);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(20);
     doc.text('MANILA', margenX + 26, 20);
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(10);
-    doc.setTextColor(...COLOR_GRIS);
+    doc.setTextColor(COLOR_GRIS[0], COLOR_GRIS[1], COLOR_GRIS[2]);
     doc.text('Restaurante', margenX + 26, 26);
 
-    doc.setTextColor(...COLOR_CLARO);
+    doc.setTextColor(COLOR_CLARO[0], COLOR_CLARO[1], COLOR_CLARO[2]);
     doc.setFontSize(10);
     doc.text(`Fecha: ${fecha}`, anchoPagina - margenX, 20, { align: 'right' });
   }
@@ -128,12 +141,12 @@ export class Pedido {
   private dibujarDatosCliente(doc: jsPDF, margenX: number, y: number): number {
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLOR_NARANJA);
+    doc.setTextColor(COLOR_NARANJA[0], COLOR_NARANJA[1], COLOR_NARANJA[2]);
     doc.text('Datos del cliente', margenX, y);
 
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(11);
-    doc.setTextColor(...COLOR_OSCURO);
+    doc.setTextColor(COLOR_OSCURO[0], COLOR_OSCURO[1], COLOR_OSCURO[2]);
 
     y += 8;
     doc.text(`Nombre: ${this.datos.nombreCompleto}`, margenX, y);
@@ -154,12 +167,12 @@ export class Pedido {
 
     doc.setFontSize(13);
     doc.setFont('helvetica', 'bold');
-    doc.setTextColor(...COLOR_NARANJA);
+    doc.setTextColor(COLOR_NARANJA[0], COLOR_NARANJA[1], COLOR_NARANJA[2]);
     doc.text('Pedido', margenX, y);
     y += 8;
 
     doc.setFontSize(10.5);
-    doc.setTextColor(...COLOR_OSCURO);
+    doc.setTextColor(COLOR_OSCURO[0], COLOR_OSCURO[1], COLOR_OSCURO[2]);
     doc.text('Producto', colProducto, y);
     doc.text('Tipo', colTipo, y);
     doc.text('Cant.', colCant, y);
@@ -167,7 +180,7 @@ export class Pedido {
     doc.text('Subtotal', colSubtotal, y, { align: 'right' });
     y += 3;
 
-    doc.setDrawColor(...COLOR_NARANJA);
+    doc.setDrawColor(COLOR_NARANJA[0], COLOR_NARANJA[1], COLOR_NARANJA[2]);
     doc.setLineWidth(0.5);
     doc.line(margenX, y, anchoPagina - margenX, y);
     y += 7;
@@ -176,20 +189,21 @@ export class Pedido {
     doc.setFontSize(10.5);
 
     for (const item of this.carrito.pedido()) {
+
       if (y > 280) {
         doc.addPage();
         y = 20;
       }
 
       const subtotal = item.precio * item.cantidad;
-      const tipo = item.tipo === 'comida' ? 'Comida' : 'Bebida';
+      const tipo = this.obtenerTipoTexto(item.tipo);
 
-      doc.setTextColor(...COLOR_OSCURO);
+      doc.setTextColor(COLOR_OSCURO[0], COLOR_OSCURO[1], COLOR_OSCURO[2]);
       doc.text(item.nombre.substring(0, 32), colProducto, y);
       doc.text(tipo, colTipo, y);
       doc.text(String(item.cantidad), colCant, y);
       doc.text(`$${item.precio.toLocaleString('es-CO')}`, colPrecio, y);
-      doc.setTextColor(...COLOR_NARANJA);
+      doc.setTextColor(COLOR_NARANJA[0], COLOR_NARANJA[1], COLOR_NARANJA[2]);
       doc.text(`$${subtotal.toLocaleString('es-CO')}`, colSubtotal, y, { align: 'right' });
       y += 8;
     }
@@ -209,15 +223,15 @@ export class Pedido {
       y = 20;
     }
 
-    doc.setFillColor(...COLOR_OSCURO);
+    doc.setFillColor(COLOR_OSCURO[0], COLOR_OSCURO[1], COLOR_OSCURO[2]);
     doc.roundedRect(margenX, y - 9, anchoPagina - margenX * 2, 14, 2, 2, 'F');
     doc.setFontSize(12);
     doc.setFont('helvetica', 'normal');
-    doc.setTextColor(...COLOR_CLARO);
+    doc.setTextColor(COLOR_CLARO[0], COLOR_CLARO[1], COLOR_CLARO[2]);
     doc.text('Total a pagar', margenX + 6, y);
     doc.setFont('helvetica', 'bold');
     doc.setFontSize(13);
-    doc.setTextColor(...COLOR_NARANJA);
+    doc.setTextColor(COLOR_NARANJA[0], COLOR_NARANJA[1], COLOR_NARANJA[2]);
     doc.text(`$${this.carrito.calcularTotal().toLocaleString('es-CO')}`, anchoPagina - margenX - 6, y, { align: 'right' });
   }
 
@@ -238,6 +252,6 @@ export class Pedido {
 
     this.carrito.vaciarPedido();
     this.mostrarFormulario = false;
-    this.datos = { ...DATOS_CLIENTE_VACIOS };
+    this.datos = Object.assign({}, DATOS_CLIENTE_VACIOS);
   }
 }

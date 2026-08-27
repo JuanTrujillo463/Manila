@@ -11,7 +11,7 @@
       <img [src]="item.imagen" [alt]="item.nombre">
       <div class="datos-item">
         <p class="nombre">{{ item.nombre }}</p>
-        <p class="tipo">{{ item.tipo === 'comida' ? 'Comida' : 'Bebida' }}</p>
+        <p class="tipo">{{ obtenerTipoTexto(item.tipo) }}</p>
       </div>
       <input type="number" min="1" class="cantidad" [ngModel]="item.cantidad" (ngModelChange)="cambiarCantidad(item.id, item.tipo, $event)">
       <p class="precio">$ {{ (item.precio * item.cantidad) | number }}</p>

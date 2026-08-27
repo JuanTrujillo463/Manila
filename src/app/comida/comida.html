@@ -23,7 +23,23 @@
 
 <p class="mensaje" *ngIf="error()">{{ error() }}</p>
 
-<div class="resultados">
+<div *ngFor="let grupo of grupos()">
+
+  <h2 class="titulo-categoria">{{ grupo.nombreCategoria }}</h2>
+
+  <div class="resultados">
+    <div class="tarjeta-comida" *ngFor="let comida of grupo.comidas">
+      <img [src]="comida.strMealThumb" [alt]="comida.strMeal">
+      <h3>{{ comida.strMeal }}</h3>
+      <p class="precio">$ {{ precios()[comida.idMeal] | number }}</p>
+      <button class="boton-agregar" (click)="agregarAlPedido(comida)">Agregar al pedido</button>
+      <button class="boton-detalle" (click)="verDetalle(comida)">Ver detalle</button>
+    </div>
+  </div>
+
+</div>
+
+<div class="resultados" *ngIf="comidas().length > 0">
   <div class="tarjeta-comida" *ngFor="let comida of comidas()">
     <img [src]="comida.strMealThumb" [alt]="comida.strMeal">
     <h3>{{ comida.strMeal }}</h3>
@@ -33,18 +49,18 @@
   </div>
 </div>
 
-<div class="fondo-modal" *ngIf="detalle()" (click)="cerrarDetalle()">
+<div class="fondo-modal" *ngIf="detalle() as d" (click)="cerrarDetalle()">
   <div class="modal-detalle" (click)="$event.stopPropagation()">
     <button class="boton-cerrar" (click)="cerrarDetalle()">✕</button>
-    <img [src]="detalle()!.strMealThumb" [alt]="detalle()!.strMeal">
-    <h2>{{ detalle()!.strMeal }}</h2>
-    <p class="precio">$ {{ precios()[detalle()!.idMeal] | number }}</p>
-    <p><strong>Categoría:</strong> {{ detalle()!.strCategory }}</p>
+    <img [src]="d.strMealThumb" [alt]="d.strMeal">
+    <h2>{{ d.strMeal }}</h2>
+    <p class="precio">$ {{ precios()[d.idMeal] | number }}</p>
+    <p><strong>Categoría:</strong> {{ d.strCategory }}</p>
     <p><strong>Ingredientes:</strong></p>
     <ul class="lista-ingredientes">
-      <li *ngFor="let ingrediente of detalle()!.ingredientes">{{ ingrediente }}</li>
+      <li *ngFor="let ingrediente of d.ingredientes">{{ ingrediente }}</li>
     </ul>
-    <button class="boton-agregar" (click)="agregarAlPedido(detalle()!); cerrarDetalle()">Agregar al pedido</button>
+    <button class="boton-agregar" (click)="agregarAlPedido(d); cerrarDetalle()">Agregar al pedido</button>
   </div>
 </div>
 

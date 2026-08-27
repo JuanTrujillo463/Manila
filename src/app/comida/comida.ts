@@ -5,7 +5,18 @@ import { ServicioApiComida } from '../servicios/servicio-api-comida';
 import { EnviarDatos } from '../servicios/enviar-datos';
 import { Comida as ComidaEntidad } from '../entidades/comida';
 
-const categorias = ['Seafood', 'Chicken', 'Dessert', 'Vegetarian', 'Pasta'];
+const categorias = [
+  { valor: 'Seafood', nombre: 'Mariscos' },
+  { valor: 'Chicken', nombre: 'Pollo' },
+  { valor: 'Dessert', nombre: 'Postres' },
+  { valor: 'Vegetarian', nombre: 'Vegetariana' },
+  { valor: 'Pasta', nombre: 'Pasta' },
+];
+
+interface GrupoComidas {
+  nombreCategoria: string;
+  comidas: ComidaEntidad[];
+}
 
 @Component({
   selector: 'app-comida',
@@ -14,13 +25,17 @@ const categorias = ['Seafood', 'Chicken', 'Dessert', 'Vegetarian', 'Pasta'];
   styleUrl: './comida.css',
 })
 export class Comida implements OnInit {
+
   private api = inject(ServicioApiComida);
   private carrito = inject(EnviarDatos);
 
   tipoBusqueda = 'nombre';
   textoBusqueda = '';
 
+  grupos = signal<GrupoComidas[]>([]);
+
   comidas = signal<ComidaEntidad[]>([]);
+
   precios = signal<{ [id: string]: number }>({});
   error = signal('');
   detalle = signal<ComidaEntidad | null>(null);
@@ -35,13 +50,26 @@ export class Comida implements OnInit {
   cargarTodas() {
     this.error.set('');
     this.comidas.set([]);
+    this.grupos.set([]);
 
     for (const categoria of categorias) {
-      this.api.comidaPorCategoria(categoria).subscribe({
+      this.api.comidaPorCategoria(categoria.valor).subscribe({
         next: (respuesta) => {
-          const nuevas: ComidaEntidad[] = respuesta.meals ?? [];
-          this.comidas.set([...this.comidas(), ...nuevas]);
-          this.asignarPrecios();
+
+          let items: ComidaEntidad[] = [];
+          if (respuesta.meals) {
+            items = respuesta.meals;
+          }
+
+          const grupoNuevo: GrupoComidas = {
+            nombreCategoria: categoria.nombre,
+            comidas: items,
+          };
+
+          const gruposActuales = this.grupos();
+          this.grupos.set(gruposActuales.concat([grupoNuevo]));
+
+          this.asignarPrecios(items);
         },
       });
     }
@@ -54,16 +82,25 @@ export class Comida implements OnInit {
 
     this.error.set('');
 
-    const peticion =
-      this.tipoBusqueda === 'nombre'
-        ? this.api.recibirDatosComida(this.textoBusqueda)
-        : this.api.comidaPorIngrediente(this.textoBusqueda);
+    this.grupos.set([]);
+
+    let peticion;
+    if (this.tipoBusqueda === 'nombre') {
+      peticion = this.api.recibirDatosComida(this.textoBusqueda);
+    } else {
+      peticion = this.api.comidaPorIngrediente(this.textoBusqueda);
+    }
 
     peticion.subscribe({
       next: (respuesta) => {
-        const lista = respuesta.meals ?? [];
+        let lista: ComidaEntidad[] = [];
+        if (respuesta.meals) {
+          lista = respuesta.meals;
+        }
+
         this.comidas.set(lista);
-        this.asignarPrecios();
+        this.asignarPrecios(lista);
+
         if (lista.length === 0) {
           this.error.set('No se encontraron resultados.');
         }
@@ -83,13 +120,17 @@ export class Comida implements OnInit {
 
     this.mostrarConfirmacion.set(true);
     clearTimeout(this.temporizadorConfirmacion);
-    this.temporizadorConfirmacion = setTimeout(() => this.mostrarConfirmacion.set(false), 2000);
+    this.temporizadorConfirmacion = setTimeout(() => {this.mostrarConfirmacion.set(false); }, 2000);
   }
 
   verDetalle(comida: ComidaEntidad) {
-    this.api.comidaPorId(comida.idMeal).subscribe({
-      next: (respuesta) => {
-        const detalleCompleto = respuesta.meals?.[0] ?? comida;
+    this.api.comidaPorId(comida.idMeal).subscribe({ next: (respuesta) => {
+
+        let detalleCompleto = comida;
+        if (respuesta.meals && respuesta.meals[0]) {
+          detalleCompleto = respuesta.meals[0];
+        }
+
         detalleCompleto.ingredientes = this.api.armarIngredientes(detalleCompleto);
         this.detalle.set(detalleCompleto);
       },
@@ -104,10 +145,10 @@ export class Comida implements OnInit {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
-  private asignarPrecios() {
-    const preciosActuales = { ...this.precios() };
+  private asignarPrecios(lista: ComidaEntidad[]) {
+    const preciosActuales = Object.assign({}, this.precios());
 
-    for (const comida of this.comidas()) {
+    for (const comida of lista) {
       const id = comida.idMeal;
       if (!preciosActuales[id]) {
         preciosActuales[id] = this.api.asignarPrecioAleatorio();
