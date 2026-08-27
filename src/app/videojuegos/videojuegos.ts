@@ -58,7 +58,7 @@ export class Videojuegos implements OnInit {
       carta.classList.add('encontrada');
       this.bebidaEncontrada = true;
     } else {
-      carta.src = '/respuesta.jpeg';
+      carta.src = 'respuesta.jpeg';
     }
 
     if (this.comidaEncontrada && this.bebidaEncontrada) {
@@ -69,7 +69,7 @@ export class Videojuegos implements OnInit {
   reiniciar() {
     for (let i = 1; i <= 16; i++) {
       const carta = document.getElementById('carta' + i) as HTMLImageElement;
-      carta.src = '/muroNegro.jpeg';
+      carta.src = 'muroNegro.jpeg';
       carta.classList.remove('volteada', 'encontrada');
     }
     this.ngOnInit();
