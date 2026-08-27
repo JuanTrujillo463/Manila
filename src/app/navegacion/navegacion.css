@@ -1,4 +1,7 @@
-img{
-    width: 30px;
-    height: 30px;
+.navbar-brand img {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  border-radius: 50%;
+  clip-path: circle(31%);
 }

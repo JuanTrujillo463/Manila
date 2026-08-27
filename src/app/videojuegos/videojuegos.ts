@@ -1,21 +1,10 @@
-import { Component, inject, OnInit, signal } from '@angular/core';
-import { CommonModule } from '@angular/common';
+import { Component, OnInit, inject } from '@angular/core';
 import { ServicioApiBebida } from '../servicios/servicio-api-bebida';
 import { ServicioApiComida } from '../servicios/servicio-api-comida';
 
-interface Carta {
-  id: number;
-  imagen: string;
-  volteada: boolean;
-  encontrada: boolean;
-}
-
-const pareja = 4;
-const espera = 900;
-
 @Component({
   selector: 'app-videojuegos',
-  imports: [CommonModule],
+  imports: [],
   templateUrl: './videojuegos.html',
   styleUrl: './videojuegos.css',
 })
@@ -23,116 +12,66 @@ export class Videojuegos implements OnInit {
   private apiComida = inject(ServicioApiComida);
   private apiBebida = inject(ServicioApiBebida);
 
-  cartas = signal<Carta[]>([]);
-  cargando = signal(true);
-  intentos = signal(0);
-  juegoTerminado = signal(false);
+  posComida: number = 0;
+  posBebida: number = 0;
+  imagenComida: string = '';
+  imagenBebida: string = '';
+  mensaje: string = '';
+  comidaEncontrada: boolean = false;
+  bebidaEncontrada: boolean = false;
 
-  private primeraCarta: Carta | null = null;
-  private bloqueado = false;
-  private imagenesCargadas: string[] = [];
-  private peticionesPendientes = 0;
+  ngOnInit(): void {
+    this.comidaEncontrada = false;
+    this.bebidaEncontrada = false;
+    this.mensaje = '';
 
-  ngOnInit() {
-    this.iniciarJuego();
-  }
-
-    iniciarJuego() {
-    this.cargando.set(true);
-    this.juegoTerminado.set(false);
-    this.intentos.set(0);
-
-    this.imagenesCargadas = [];
-    this.peticionesPendientes = pareja * 2;
-
-    for (let i = 0; i < pareja; i++) {
-      this.pedirComidaUnica();
-      this.pedirBebidaUnica();
+    this.posComida = Math.floor(Math.random() * 16) + 1;
+    this.posBebida = Math.floor(Math.random() * 16) + 1;
+    if (this.posBebida == this.posComida) {
+      this.posBebida = Math.floor(Math.random() * 16) + 1;
     }
-  }
 
-  private pedirComidaUnica() {
     this.apiComida.comidaAleatoria().subscribe((respuesta) => {
-      const imagen = respuesta.meals[0].strMealThumb;
-      if (this.imagenesCargadas.includes(imagen)) {
-        this.pedirComidaUnica();
-        return;
-      }
-      this.imagenesCargadas.push(imagen);
-      this.revisarSiYaCargaronTodas();
+      this.imagenComida = respuesta.meals[0].strMealThumb;
     });
-  }
 
-  private pedirBebidaUnica() {
     this.apiBebida.bebidaAleatoria().subscribe((respuesta) => {
-      const imagen = respuesta.drinks[0].strDrinkThumb;
-      if (this.imagenesCargadas.includes(imagen)) {
-        this.pedirBebidaUnica();
-        return;
-      }
-      this.imagenesCargadas.push(imagen);
-      this.revisarSiYaCargaronTodas();
+      this.imagenBebida = respuesta.drinks[0].strDrinkThumb;
     });
   }
 
-  voltearCarta(carta: Carta) {
-    if (this.bloqueado || carta.volteada || carta.encontrada) {
+  descubrir(p: number) {
+    const carta = document.getElementById('carta' + p) as HTMLImageElement;
+
+    if (carta.classList.contains('volteada')) {
       return;
     }
 
-    this.actualizarCarta(carta.id, { volteada: true });
+    carta.classList.add('volteada');
 
-    if (!this.primeraCarta) {
-      this.primeraCarta = { ...carta, volteada: true };
-      return;
-    }
-
-    this.intentos.update((valor) => valor + 1);
-
-    if (this.primeraCarta.imagen === carta.imagen) {
-      this.actualizarCarta(this.primeraCarta.id, { encontrada: true });
-      this.actualizarCarta(carta.id, { encontrada: true });
-      this.primeraCarta = null;
-      this.revisarSiTermino();
+    if (p == this.posComida) {
+      carta.src = this.imagenComida;
+      carta.classList.add('encontrada');
+      this.comidaEncontrada = true;
+    } else if (p == this.posBebida) {
+      carta.src = this.imagenBebida;
+      carta.classList.add('encontrada');
+      this.bebidaEncontrada = true;
     } else {
-      this.bloqueado = true;
-      const idPrimera = this.primeraCarta.id;
-      const idSegunda = carta.id;
-      setTimeout(() => {
-        this.actualizarCarta(idPrimera, { volteada: false });
-        this.actualizarCarta(idSegunda, { volteada: false });
-        this.primeraCarta = null;
-        this.bloqueado = false;
-      }, espera);
+      carta.src = '/respuesta.jpeg';
+    }
+
+    if (this.comidaEncontrada && this.bebidaEncontrada) {
+      this.mensaje = '¡Ganaste!';
     }
   }
 
-  private revisarSiYaCargaronTodas() {
-    this.peticionesPendientes--;
-    if (this.peticionesPendientes > 0) {
-      return;
+  reiniciar() {
+    for (let i = 1; i <= 16; i++) {
+      const carta = document.getElementById('carta' + i) as HTMLImageElement;
+      carta.src = '/muroNegro.jpeg';
+      carta.classList.remove('volteada', 'encontrada');
     }
-
-    const parejas = [...this.imagenesCargadas, ...this.imagenesCargadas];
-    const mezcladas = parejas.sort(() => Math.random() - 0.5);
-
-    this.cartas.set(
-      mezcladas.map((imagen, indice) => ({
-        id: indice,
-        imagen,
-        volteada: false,
-        encontrada: false,
-      }))
-    );
-
-    this.cargando.set(false);
-  }
-
-  private actualizarCarta(id: number, cambios: Partial<Carta>) {
-    this.cartas.update((lista) => lista.map((c) => (c.id === id ? { ...c, ...cambios } : c)));
-  }
-
-  private revisarSiTermino() {
-    this.juegoTerminado.set(this.cartas().every((c) => c.encontrada));
+    this.ngOnInit();
   }
 }

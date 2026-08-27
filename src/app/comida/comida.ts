@@ -26,18 +26,7 @@ export class Comida implements OnInit {
   detalle = signal<ComidaEntidad | null>(null);
 
   ngOnInit() {
-    this.cargarPorCategoria('Seafood');
-  }
-
-  cargarPorCategoria(categoria: string) {
-    this.error.set('');
-
-    this.api.comidaPorCategoria(categoria).subscribe({
-      next: (respuesta) => {
-        this.comidas.set(respuesta.meals ?? []);
-        this.asignarPrecios();
-      },
-    });
+    this.cargarTodas();
   }
 
   cargarTodas() {
@@ -102,6 +91,10 @@ export class Comida implements OnInit {
 
   cerrarDetalle() {
     this.detalle.set(null);
+  }
+
+  volverArriba() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   private asignarPrecios() {

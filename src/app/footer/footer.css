@@ -73,6 +73,21 @@
   color: #cfcfcf;
 }
 
+.marca-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.logo-footer {
+  height: 60px;
+
+  object-fit: contain;
+  border-radius: 50%;
+  clip-path: circle(31%);
+  flex-shrink: 0;
+}
+
 @media (max-width: 768px) {
   .footer-principal {
     flex-direction: column;

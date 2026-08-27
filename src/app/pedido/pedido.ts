@@ -11,7 +11,7 @@ const COLOR_OSCURO: ColorRGB = [26, 26, 26];
 const COLOR_NARANJA: ColorRGB = [210, 105, 30];
 const COLOR_CLARO: ColorRGB = [245, 245, 245];
 const COLOR_GRIS: ColorRGB = [160, 160, 160];
-const URL_LOGO = 'favicon.svg';
+const URL_LOGO = 'logoManila.jpg';
 
 const DATOS_CLIENTE_VACIOS: DatosCliente = {
   nombreCompleto: '',
@@ -63,11 +63,28 @@ export class Pedido {
       const img = new Image();
       img.crossOrigin = 'anonymous';
       img.onload = () => {
+        const lado = Math.min(img.width, img.height);
+        const origenX = (img.width - lado) / 2;
+        const origenY = (img.height - lado) / 2;
+
         const canvas = document.createElement('canvas');
-        canvas.width = img.width;
-        canvas.height = img.height;
+        canvas.width = lado;
+        canvas.height = lado;
         const contexto = canvas.getContext('2d');
-        contexto?.drawImage(img, 0, 0);
+
+        if (!contexto) {
+          resolve(null);
+          return;
+        }
+
+        contexto.save();
+        contexto.beginPath();
+        contexto.arc(lado / 2, lado / 2, lado / 2, 0, Math.PI * 2);
+        contexto.closePath();
+        contexto.clip();
+        contexto.drawImage(img, origenX, origenY, lado, lado, 0, 0, lado, lado);
+        contexto.restore();
+
         resolve(canvas.toDataURL('image/png'));
       };
       img.onerror = () => resolve(null);

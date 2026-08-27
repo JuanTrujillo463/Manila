@@ -1,0 +1,53 @@
+.contenedor {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  padding: 28px 60px 30px;
+  margin: 10px 0 18px;
+  background-color: #1a1a1a;
+}
+
+
+.mision-vision {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 40px;
+  width: 100%;
+  background-color: #1a1a1a;
+  color: #f5f5f5;
+  padding: 50px 60px;
+  font-family: 'Segoe UI', Arial, sans-serif;
+}
+
+.bloque-mv {
+  flex: 1;
+  min-width: 260px;
+  max-width: 480px;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 8px;
+  padding: 24px 20px;
+  background-color: #222222;
+}
+
+.titulo-mv {
+  font-size: 1.3rem;
+  font-weight: 600;
+  letter-spacing: 1px;
+  color: #d2691e;
+  margin-bottom: 12px;
+}
+
+.texto-mv {
+  font-size: 0.95rem;
+  color: #cfcfcf;
+  line-height: 1.6;
+  margin: 0;
+}
+
+@media (max-width: 768px) {
+  .mision-vision {
+    padding: 40px 30px;
+  }
+}

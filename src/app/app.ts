@@ -4,11 +4,12 @@ import { Navegacion } from './navegacion/navegacion';
 import { Footer } from './footer/footer';
 import { Informacion } from './informacion/informacion';
 import { Carrusel } from './carrusel/carrusel';
+import { Meta } from "./meta/meta";
 
 @Component({
   selector: 'app-root',
   standalone: true,
-  imports: [RouterOutlet, Navegacion, Footer, Informacion, Carrusel],
+  imports: [RouterOutlet, Navegacion, Footer, Informacion, Carrusel, Meta],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

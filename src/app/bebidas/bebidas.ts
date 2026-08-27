@@ -47,27 +47,143 @@ export class Bebidas implements OnInit {
   buscar() {
     this.error.set('');
 
+    const texto = this.textoBusqueda.trim();
+    const usaIngredienteComoBase = !!texto && this.tipoBusqueda === 'nombreIngrediente';
+
+    if (!usaIngredienteComoBase && !this.filtroTipo && !this.filtroCategoria && !texto) {
+      this.error.set('Escribe un texto o selecciona un filtro para buscar.');
+      this.bebidas.set([]);
+      return;
+    }
+
     let peticion;
-    if (this.filtroTipo) {
+    let necesitaDetalle = false;
+    const filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'> = [];
+
+    // Se elige la petición base con el criterio más restrictivo disponible;
+    // los demás filtros activos se aplican después sobre esos resultados.
+    if (usaIngredienteComoBase) {
+      // La API necesita los ingredientes de varias palabras con "_" en vez de espacio
+      // (ej: "Orange Juice" -> "Orange_Juice"), si no, no encuentra coincidencias.
+      const ingredienteFormateado = texto.replace(/ /g, '_');
+      peticion = this.api.bebidaPorIngrediente(ingredienteFormateado);
+      necesitaDetalle = true;
+      if (this.filtroTipo) filtrosPendientes.push('tipo');
+      if (this.filtroCategoria) filtrosPendientes.push('categoria');
+    } else if (this.filtroTipo) {
       peticion = this.api.bebidaPorTipo(this.filtroTipo);
+      necesitaDetalle = true;
+      if (texto) filtrosPendientes.push('nombre');
+      if (this.filtroCategoria) filtrosPendientes.push('categoria');
     } else if (this.filtroCategoria) {
       peticion = this.api.bebidaPorCategoria(this.filtroCategoria);
-    } else if (this.tipoBusqueda === 'nombreCoctel') {
-      peticion = this.api.recibirDatosBebida(this.textoBusqueda);
+      necesitaDetalle = true;
+      if (texto) filtrosPendientes.push('nombre');
     } else {
-      peticion = this.api.bebidaPorIngrediente(this.textoBusqueda);
+      // Búsqueda por nombre: search.php ya trae todos los datos, no hace
+      // falta pedir el detalle de cada bebida por aparte.
+      peticion = this.api.recibirDatosBebida(texto);
+      filtrosPendientes.push('nombre');
     }
 
     peticion.subscribe({
       next: (respuesta) => {
-        const lista = respuesta.drinks ?? [];
-        this.bebidas.set(lista);
-        this.asignarPrecios();
-        if (lista.length === 0) {
+        const base = respuesta.drinks ?? [];
+
+        if (base.length === 0) {
+          this.bebidas.set([]);
           this.error.set('No se encontraron resultados.');
+          return;
+        }
+
+        // filter.php solo devuelve id/nombre/imagen. Si hace falta aplicar
+        // más filtros (nombre, tipo o categoría), se piden los datos completos.
+        if (necesitaDetalle && filtrosPendientes.length > 0) {
+          this.completarYFiltrar(base, texto, filtrosPendientes);
+        } else if (filtrosPendientes.length > 0) {
+          this.aplicarFiltrosYMostrar(base, texto, filtrosPendientes);
+        } else {
+          this.bebidas.set(base);
+          this.asignarPrecios();
         }
       },
+      error: () => {
+        this.bebidas.set([]);
+        this.error.set('Ocurrió un error al buscar. Intenta de nuevo.');
+      },
     });
+  }
+
+  private completarYFiltrar(
+    base: Bebida[],
+    texto: string,
+    filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'>
+  ) {
+    const completos: Bebida[] = [];
+    let recibidas = 0;
+
+    const contarRespuesta = () => {
+      recibidas++;
+      if (recibidas === base.length) {
+        this.aplicarFiltrosYMostrar(completos, texto, filtrosPendientes);
+      }
+    };
+
+    for (const bebida of base) {
+      this.api.bebidaPorId(bebida.idDrink).subscribe({
+        next: (respuesta) => {
+          const detalle = respuesta.drinks?.[0];
+          if (detalle) {
+            completos.push(detalle);
+          }
+          contarRespuesta();
+        },
+        error: () => {
+          // Si una petición falla, la contamos igual para no dejar
+          // el buscador esperando para siempre.
+          contarRespuesta();
+        },
+      });
+    }
+  }
+  private aplicarFiltrosYMostrar(
+    lista: Bebida[],
+    texto: string,
+    filtrosPendientes: Array<'nombre' | 'tipo' | 'categoria'>
+  ) {
+    let resultado = lista;
+
+    if (filtrosPendientes.includes('nombre')) {
+  // Se separa el texto escrito en palabras sueltas: si el nombre de la
+  // bebida contiene AL MENOS UNA de esas palabras, se considera coincidencia.
+  // Así no hace falta escribir el nombre completo o en orden exacto.
+  const palabras = texto
+    .toLowerCase()
+    .split(' ')
+    .filter((palabra) => palabra.length > 0);
+
+  resultado = resultado.filter((b) => {
+    const nombre = b.strDrink.toLowerCase();
+    return palabras.some((palabra) => nombre.includes(palabra));
+      });
+    }
+
+    if (filtrosPendientes.includes('tipo')) {
+      resultado = resultado.filter((b) => (b.strAlcoholic ?? '').replace(/ /g, '_') === this.filtroTipo);
+    }
+
+    if (filtrosPendientes.includes('categoria')) {
+      resultado = resultado.filter(
+        (b) => (b.strCategory ?? '').replace(/ /g, '_') === this.filtroCategoria
+      );
+    }
+
+    this.bebidas.set(resultado);
+    this.asignarPrecios();
+
+    if (resultado.length === 0) {
+      this.error.set('No se encontraron resultados.');
+    }
   }
 
   agregarAlPedido(bebida: Bebida) {
@@ -93,6 +209,10 @@ export class Bebidas implements OnInit {
 
   cerrarDetalle() {
     this.detalle.set(null);
+  }
+
+  volverArriba() {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   private agregarResultados(nuevas: Bebida[]) {
