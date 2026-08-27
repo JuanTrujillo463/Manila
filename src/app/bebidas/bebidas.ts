@@ -25,6 +25,9 @@ export class Bebidas implements OnInit {
   error = signal('');
   detalle = signal<Bebida | null>(null);
 
+  mostrarConfirmacion = signal(false);
+  private temporizadorConfirmacion?: ReturnType<typeof setTimeout>;
+
   ngOnInit() {
     this.cargarTodas();
   }
@@ -195,6 +198,10 @@ export class Bebidas implements OnInit {
       precio: this.precios()[bebida.idDrink],
       cantidad: 1,
     });
+
+    this.mostrarConfirmacion.set(true);
+    clearTimeout(this.temporizadorConfirmacion);
+    this.temporizadorConfirmacion = setTimeout(() => this.mostrarConfirmacion.set(false), 2000);
   }
 
   verDetalle(bebida: Bebida) {

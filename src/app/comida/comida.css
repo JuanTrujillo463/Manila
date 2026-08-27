@@ -332,3 +332,42 @@
 .boton-arriba:hover {
   background-color: #333333;
 }
+
+.toast-confirmacion {
+  position: fixed;
+  bottom: 30px;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: #d2691e;
+  color: #f5f5f5;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  z-index: 200;
+  animation: aparecerToast 0.3s ease, desaparecerToast 0.3s ease 1.7s;
+  animation-fill-mode: forwards;
+}
+
+@keyframes aparecerToast {
+  from {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+  to {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+}
+
+@keyframes desaparecerToast {
+  from {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+  to {
+    opacity: 0;
+    transform: translate(-50%, 20px);
+  }
+}

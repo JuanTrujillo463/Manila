@@ -25,6 +25,9 @@ export class Comida implements OnInit {
   error = signal('');
   detalle = signal<ComidaEntidad | null>(null);
 
+  mostrarConfirmacion = signal(false);
+  private temporizadorConfirmacion?: ReturnType<typeof setTimeout>;
+
   ngOnInit() {
     this.cargarTodas();
   }
@@ -77,6 +80,10 @@ export class Comida implements OnInit {
       precio: this.precios()[comida.idMeal],
       cantidad: 1,
     });
+
+    this.mostrarConfirmacion.set(true);
+    clearTimeout(this.temporizadorConfirmacion);
+    this.temporizadorConfirmacion = setTimeout(() => this.mostrarConfirmacion.set(false), 2000);
   }
 
   verDetalle(comida: ComidaEntidad) {
